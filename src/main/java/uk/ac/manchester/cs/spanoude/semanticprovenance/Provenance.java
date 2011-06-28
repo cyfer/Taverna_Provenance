@@ -16,23 +16,37 @@ import java.util.zip.*;
 import java.util.*;
 import java.io.*;
 
+/**
+ * 
+ * @author Emmanouil Spanoudakis
+ *
+ *
+ */
 
 public class Provenance {
 
 	/**
-	 * @param args
+	 * @param args - args[0]= /this : Returns wsdl services for the graph being inserted only
+	 *               args[0]= /all : Returns wsdl services for all graphs in the KB
+	 *               args[1]= provenance graph to be inserted in the KB (in .rdf format)
+	 *               args[2]= workflow file (.t2flow format) that is converted into .scufl2 format and then extracted. It contains
+	 *               the Profile and dataflow files that are inserted in the KB
+	 *               args[3]= The directory specified by the user where the .csv files will be created
 	 */
 	private static String prefixes= "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
         +"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
         +"PREFIX j: <http://purl.org/taverna/janus#>"
         +"PREFIX scufl2: <http://ns.taverna.org.uk/2010/scufl2#>"
-        +"PREFIX taverna: <http://ns.taverna.org.uk/2010/activity/wsdl/operation#>";
+        +"PREFIX taverna: <http://ns.taverna.org.uk/2010/activity/wsdl/operation#>"
+        +"PREFIX myont:<https://github.com/cyfer/Taverna_Provenance/wiki/Ontology#>";
 	
 	private static String UID="";
-	
+	private static String currentGraphURI="";
+	private static Boolean newGraphInserted=false;
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-				
+		
+	    		
 		Store store;
 		Query newQuery;
 		String scufl2File="";
@@ -40,13 +54,13 @@ public class Provenance {
 		try {
 			System.out.println("Starting...");
 			store = new Store("http://localhost:8001");
-			String provenanceGraph= FileUtils.readFileToString(new File(args[0]), "utf-8");
+			String provenanceGraph= FileUtils.readFileToString(new File(args[1]), "utf-8");
 						
 			loadProvenanceFileInStore(store,provenanceGraph);			
 						
 			System.out.println("Creating Scufl2 file...");
 			try {
-			  scufl2File=createScufl2File(args[1]);
+			  scufl2File=createScufl2File(args[2]);
 			} catch (JAXBException e) {
 				e.printStackTrace();
 			} catch (ReaderException e) {
@@ -55,22 +69,28 @@ public class Provenance {
 				e.printStackTrace();
 			}			                  
 		    
-			String unzipDirectory=unzipScufl2File(args[1]);
+			String unzipDirectory=unzipScufl2File(args[2]);
 			loadProfileAndDataflowFiles(store,unzipDirectory);
 			
-			
-			// findWSDLServices(UID,store);
-			
-			
+		if (args[0].equals("all"))	
+		 findWSDLServicesForEveryProvenanceGraph(store, args[3]);
+		else if(args[0].equals("this")){
+		if (newGraphInserted)
+			findWSDLServicesForCurrentProvenanceGraph(store, args[3]);
+		else
+			System.out.println("Graph was not inserted because it is already present in the KB. Returning results from old graph.");
+		    findWSDLServicesForCurrentProvenanceGraph(store, args[3]);
+		}
 		}
 			catch (MalformedURLException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			
 	}
 	
-	
+	//
 	
 private static void loadProvenanceFileInStore(Store store,String graph){
 	AddGraph newGraph;
@@ -114,7 +134,8 @@ private static void loadProvenanceFileInStore(Store store,String graph){
     UUID provenanceUID = UUID.randomUUID();
     newGraph=new AddGraph(graph,"https://github.com/cyfer/Taverna_Provenance/wiki/provenance/"+String.valueOf(provenanceUID),store,"Loading finalised provenance graph...",1);  //Re-insert graph, with correct URI based on workflow UID
     System.out.println("Graph: "+"https://github.com/cyfer/Taverna_Provenance/wiki/provenance/"+String.valueOf(provenanceUID)+" has been added to KB" );
-
+    currentGraphURI="<https://github.com/cyfer/Taverna_Provenance/wiki/provenance/"+String.valueOf(provenanceUID)+">";
+    newGraphInserted=true;
   //-----add reference triples in the master graph
 	String provenanceTriple="<https://github.com/cyfer/Taverna_Provenance/wiki/provenance/"+String.valueOf(provenanceUID)+"> <https://github.com/cyfer/Taverna_Provenance/wiki/Ontology#isProvenanceOf> <"+UID+">";
 	if(masterGraphExists){
@@ -127,6 +148,16 @@ private static void loadProvenanceFileInStore(Store store,String graph){
 	}
 	else{
 		System.out.println("These provenance data already exist in the triple store!");
+		//System.out.println(workflowrunIdURI);
+		String getMatchingProvenanceGraph=prefixes+" SELECT ?provenance  WHERE { GRAPH <https://github.com/cyfer/Taverna_Provenance/wiki/masterprovenance>{"
+                                          +"?provenance myont:isProvenanceOf <"+UID+"> }"
+                                          +" GRAPH ?provenance {"+workflowrunIdURI+" rdf:type j:workflow_run }"
+                                          +"} LIMIT 200";
+
+		newQuery= new Query(getMatchingProvenanceGraph,store,"Getting existing graph URI...");
+		currentGraphURI=newQuery.getStoreResponse();
+		currentGraphURI=currentGraphURI.substring(currentGraphURI.indexOf("<"), currentGraphURI.lastIndexOf(">")+1);
+		System.out.println(currentGraphURI);
 	}	
 
 }
@@ -238,15 +269,15 @@ private static void loadProfileAndDataflowFiles(Store store, String baseDir){
 	response= newQuery.getStoreResponse();
 	//----get profile filename (It's always in profile sub Folder)
 	String profilePathArray[]= response.split("profile/");
-	int indexOfPeriod=profilePathArray[1].indexOf(".");
-	String profileFileName=profilePathArray[1].substring(0, indexOfPeriod);
+	int indexOfEnd=profilePathArray[1].indexOf(".rdf");       
+	String profileFileName=profilePathArray[1].substring(0, indexOfEnd);
 	profileFileName=profileFileName+".rdf";
 	//System.out.println(profileFileName);
 	
 	//----get dataflow filename (It's always in dataflow sub Folder)
 	String dataflowPathArray[]= response.split("workflow/");
-	indexOfPeriod=dataflowPathArray[1].indexOf(".");
-	String dataflowFileName=dataflowPathArray[1].substring(0, indexOfPeriod);
+	indexOfEnd=dataflowPathArray[1].indexOf(".rdf");
+	String dataflowFileName=dataflowPathArray[1].substring(0, indexOfEnd);
 	dataflowFileName=dataflowFileName+".rdf";
 	//System.out.println(dataflowFileName);
 	
@@ -282,23 +313,101 @@ private static void loadProfileAndDataflowFiles(Store store, String baseDir){
 	}
 }
 
-private static void findWSDLServices(String UID, Store store){
+private static void  findWSDLServicesForEveryProvenanceGraph(Store store, String filePathForCSV){
 	//Run the wsdl finding query
 	String wsdlQuery=prefixes+" SELECT ?processor ?portname ?valuebinding ?activityname ?wsdlURL WHERE {" 
 
-+"GRAPH <http://ns.taverna.org.uk/"+UID+"/provenance> {"
-+"?idURI rdf:type j:workflow_spec . ?idURI rdfs:comment ?workflowId}"
+	+"GRAPH <https://github.com/cyfer/Taverna_Provenance/wiki/masterprovenance> {"
+	+	"?provenance myont:isProvenanceOf ?x}"
 
-+"GRAPH ?dataflow { FILTER regex(str(?dataflow), ?workflowId). ?procURI j:has_processor_type ?type . FILTER regex(str(?type), \"WSDLActivity\") . ?procURI rdfs:comment ?processor . ?procURI <http://knoesis.wright.edu/provenir/provenir.owl#has_parameter> ?param . ?param rdf:type j:port . ?param rdfs:comment ?portname . ?param j:has_value_binding ?valueURI . ?valueURI rdfs:comment ?valuebinding"
-+"}" 
+	+"	GRAPH <https://github.com/cyfer/Taverna_Provenance/wiki/masterdataflow> {"
+	+"	?dataflow myont:isDataflowOf ?x}"
 
-+"GRAPH ?profile {FILTER regex(str(?dataflow), ?workflowId). ?procbindingURI  scufl2:bindActivity ?activityURI . ?procbindingURI scufl2:name ?name . FILTER (str(?processor)=?name). ?configURI scufl2:configure ?activityURI . ?configURI <http://ns.taverna.org.uk/2010/activity/wsdl#operation> ?bnode . ?bnode taverna:name ?activityname . ?bnode taverna:wsdl ?wsdlURL}"
-+"}"
+
+	+"	GRAPH <https://github.com/cyfer/Taverna_Provenance/wiki/masterprofile> {"
+	+"	?profile myont:isProfileOf ?x}"
+
+
+	+"	GRAPH ?provenance {?procURI j:has_processor_type ?type . FILTER regex(str(?type), \"WSDLActivity\") . ?procURI rdfs:comment ?processor . ?procURI <http://knoesis.wright.edu/provenir/provenir.owl#has_parameter> ?param . ?param rdf:type j:port . ?param rdfs:comment ?portname . ?param j:has_value_binding ?valueURI . ?valueURI rdfs:comment ?valuebinding"
+	+"	} "
+
+	+"	GRAPH ?profile { ?procbindingURI  scufl2:bindActivity ?activityURI . ?procbindingURI scufl2:name ?name . FILTER (str(?processor)=?name). ?configURI scufl2:configure ?activityURI . ?configURI <http://ns.taverna.org.uk/2010/activity/wsdl#operation> ?bnode . ?bnode taverna:name ?activityname . ?bnode taverna:wsdl ?wsdlURL}"
+	+"	}"
 +"LIMIT 200";
 	 Query newQuery=new Query(wsdlQuery,store,"Getting wsdl services...");
-	
+	 generateCsvFile(filePathForCSV+"AllGraphCSV.csv",newQuery.getStoreResponse());
 	} 
 
+private static void  findWSDLServicesForCurrentProvenanceGraph(Store store,String filePathForCSV){
+	//Run the wsdl finding query
+	String wsdlQuery=prefixes+" SELECT ?processor ?portname ?valuebinding ?activityname ?wsdlURL WHERE {" 
+	
+	+"	GRAPH <https://github.com/cyfer/Taverna_Provenance/wiki/masterprofile> {"
+	+"	?profile myont:isProfileOf <"+UID+">}"
+
+
+	+"	GRAPH "+ currentGraphURI+" {?procURI j:has_processor_type ?type . FILTER regex(str(?type), \"WSDLActivity\") . ?procURI rdfs:comment ?processor . ?procURI <http://knoesis.wright.edu/provenir/provenir.owl#has_parameter> ?param . ?param rdf:type j:port . ?param rdfs:comment ?portname . ?param j:has_value_binding ?valueURI . ?valueURI rdfs:comment ?valuebinding"
+	+"	} "
+
+	+"	GRAPH ?profile { ?procbindingURI  scufl2:bindActivity ?activityURI . ?procbindingURI scufl2:name ?name . FILTER (str(?processor)=?name). ?configURI scufl2:configure ?activityURI . ?configURI <http://ns.taverna.org.uk/2010/activity/wsdl#operation> ?bnode . ?bnode taverna:name ?activityname . ?bnode taverna:wsdl ?wsdlURL}"
+	+"	}"
++"LIMIT 200";
+	 Query newQuery=new Query(wsdlQuery,store,"Getting wsdl services...");
+	 generateCsvFile(filePathForCSV+"SingleGraphCSV.csv",newQuery.getStoreResponse());
+	} 
+
+
+private static void generateCsvFile(String fileName, String response)
+{   response=response.replaceAll("\n", "\t");
+	String responseInArray[]=response.split("\t");
+	
+	try
+	{
+	    FileWriter writer = new FileWriter(fileName);
+
+	    writer.append("Processor Name");
+	    writer.append(',');
+	    writer.append("Port Name");
+	    writer.append(',');
+	    writer.append("Value Binding");
+	    writer.append(',');
+	    writer.append("Activity Name");
+	    writer.append(',');
+	    writer.append("WSDL Service URL");
+	    writer.append('\n');
+	    
+	    for (int i=0;i<responseInArray.length;i++){
+	    	    	
+	    	if(responseInArray[i].contains("^^")){
+	    		int indexOfEnd=responseInArray[i].indexOf("^^");
+		        String tmp=responseInArray[i].substring(1, indexOfEnd-1);
+	    	    writer.append(tmp);	
+	    	    if((i+1)%5==0)
+	    	    writer.append('\n');
+	    	    else
+	    	    	writer.append(',');
+	    	}
+	    	else{
+	    	writer.append(responseInArray[i]);
+	    	if((i+1)%5==0)
+	    	    writer.append('\n');
+	    	else
+	    		writer.append(',');
+	    	}
+	    	
+	    
+	    }
+	   
+	    //generate whatever data you want
+
+	    writer.flush();
+	    writer.close();
+	}
+	catch(IOException e)
+	{
+	     e.printStackTrace();
+	} 
+ }
 
 
  private static String parseResponse(String response, String delimiter){
