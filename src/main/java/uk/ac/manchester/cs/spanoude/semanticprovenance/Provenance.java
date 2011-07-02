@@ -28,10 +28,12 @@ public class Provenance {
 	/**
 	 * @param args - args[0]= /this : Returns wsdl services for the graph being inserted only
 	 *               args[0]= /all : Returns wsdl services for all graphs in the KB
-	 *               args[1]= provenance graph to be inserted in the KB (in .rdf format)
-	 *               args[2]= workflow file (.t2flow format) that is converted into .scufl2 format and then extracted. It contains
+	 *               args[1]= filepath to Taverna folder eg. /Users/dragonfighter/Documents/Master_Thesis/tools/taverna-nightly-2.3-SNAPSHOT-20110527/
+	 *               args[2]= workflow file (.t2flow format) that is converted into .scufl2 format and then extracted. The scufl2 file contains
 	 *               the Profile and dataflow files that are inserted in the KB
 	 *               args[3]= The directory specified by the user where the .csv files will be created
+	 *               args[4]-args[n]= Any arguments that may be needed for the workflow to run. Please follow the format: <Input Port> <Input Value> ommiting <>
+	 *               Take care to spell input ports exactly as they appear in the workflow 
 	 */
 	private static String prefixes= "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
         +"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>"
@@ -43,21 +45,49 @@ public class Provenance {
 	private static String UID="";
 	private static String currentGraphURI="";
 	private static Boolean newGraphInserted=false;
+	
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		
-	    		
 		Store store;
 		Query newQuery;
 		String scufl2File="";
 		String response;
+		String provenanceOuputDir="";
+		
+		//Step 1. Run the workflow (.t2flow file) through command line and generate provenance file. This is created in a directory inside the project folder in the workspace which is shown in the program output.
+		try {
+			System.out.println("Running workflow...");
+			String ls_str;
+			String commandToExecute="sh "+args[1]+"executeworkflow.sh -embedded ";
+			if(args.length>4){
+			for(int i=4;i<args.length;i=i+2){
+				commandToExecute=commandToExecute+"-inputvalue "+args[i]+" "+args[i+1];
+			}
+			}
+            Process ls_proc = Runtime.getRuntime().exec(commandToExecute+args[2]+" -janus");
+            BufferedReader ls_in= new BufferedReader(new InputStreamReader(ls_proc.getInputStream()));
+			try {
+			while ((ls_str = ls_in.readLine()) != null) {
+			System.out.println(ls_str);
+			if (ls_str.contains("Workflow run complete. Outputs will be saved to the directory:"))
+				provenanceOuputDir=ls_str.substring(ls_str.indexOf(":")+2);
+				}
+			} catch (IOException e) {
+			System.exit(0);
+			}
+			} catch (IOException e1) {
+			System.err.println(e1);
+			System.exit(1);
+			} 
+
+        
+	   //Step 2.Load provenance file in triple store
 		try {
 			System.out.println("Starting...");
 			store = new Store("http://localhost:8001");
-			String provenanceGraph= FileUtils.readFileToString(new File(args[1]), "utf-8");
-						
+			String provenanceGraph= FileUtils.readFileToString(new File(provenanceOuputDir+"/provenance-janus.rdf"), "utf-8");						
 			loadProvenanceFileInStore(store,provenanceGraph);			
-						
+		
+		//Step 3. Create Scufl2 file out of workflow file
 			System.out.println("Creating Scufl2 file...");
 			try {
 			  scufl2File=createScufl2File(args[2]);
@@ -68,10 +98,13 @@ public class Provenance {
 			} catch (WriterException e) {
 				e.printStackTrace();
 			}			                  
-		    
+		 //Step 3. Unzip Scufl2 file and create profile and dataflow rdf files   
 			String unzipDirectory=unzipScufl2File(args[2]);
-			loadProfileAndDataflowFiles(store,unzipDirectory);
 			
+		//Step 4. Load profile, dataflow and bundle files in the triple store	
+			loadProfileAndDataflowFiles(store,unzipDirectory);
+		
+		//Step 5 Run wsdl finding query on specified graphs and create .csv files with the results.	
 		if (args[0].equals("all"))	
 		 findWSDLServicesForEveryProvenanceGraph(store, args[3]);
 		else if(args[0].equals("this")){
@@ -90,7 +123,7 @@ public class Provenance {
 			
 	}
 	
-	//
+	
 	
 private static void loadProvenanceFileInStore(Store store,String graph){
 	AddGraph newGraph;
@@ -376,7 +409,7 @@ private static void generateCsvFile(String fileName, String response)
 	    writer.append("WSDL Service URL");
 	    writer.append('\n');
 	    
-	    for (int i=0;i<responseInArray.length;i++){
+	    for (int i=5;i<responseInArray.length;i++){
 	    	    	
 	    	if(responseInArray[i].contains("^^")){
 	    		int indexOfEnd=responseInArray[i].indexOf("^^");
