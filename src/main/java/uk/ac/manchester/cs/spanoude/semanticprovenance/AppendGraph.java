@@ -7,8 +7,10 @@ import uk.co.magus.fourstore.client.Store;
 
 public class AppendGraph {
 
-	public AppendGraph(String graph, String URI, Store store,String msg,int inputFormat){
+	public AppendGraph(String graph, String URI,String storeType,String msg,int inputFormat){
+		if(storeType.equals("4store")){
 		try {
+			Store store = new Store("http://localhost:8001");
 			String response="";
 			System.out.println("Appending graph");
 			if (inputFormat==1){
@@ -23,6 +25,10 @@ public class AppendGraph {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		}
+		else{
+			System.out.println("Store not currently supported");
 		}
 	}
 }

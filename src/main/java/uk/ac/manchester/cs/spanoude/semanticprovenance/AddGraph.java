@@ -8,8 +8,10 @@ public class AddGraph {
 	
 	// "https://github.com/cyfer/Taverna_Provenance/wiki/Ontology#"
 	
-	public AddGraph(String graph, String URI, Store store,String msg,int inputFormat){
+	public AddGraph(String graph, String URI,String storeType,String msg,int inputFormat){
+		if(storeType.equals("4store")){
 		try {
+			Store store = new Store("http://localhost:8001");
 			String response=""; 			
 			System.out.println("Adding graph");
 			if (inputFormat==1){
@@ -26,6 +28,10 @@ public class AddGraph {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		}
+		else{
+			System.out.println("Store not currently supported");
 		}
 	}
 }

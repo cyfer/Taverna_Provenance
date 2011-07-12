@@ -6,8 +6,10 @@ import java.net.MalformedURLException;
 
 public class DeleteGraph {
 
-	public DeleteGraph(Store store,String graph,String msg){
+	public DeleteGraph(String storeType,String graph,String msg){
+		if(storeType.equals("4store")){
 		try{
+		Store store = new Store("http://localhost:8001");
 		String response = store.delete(graph);
 		System.out.println(response);
 		System.out.println(msg);
@@ -16,6 +18,10 @@ public class DeleteGraph {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		}
+		else{
+			System.out.println("Store not currently supported");
 		}
 	}
 }

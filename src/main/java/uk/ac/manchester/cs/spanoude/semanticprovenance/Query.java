@@ -6,8 +6,10 @@ import java.net.MalformedURLException;
 public class Query {
 	private String StoreResponse="";
 
-	public Query(String query,Store store,String msg){
+	public Query(String query,String storeType,String msg){
+		if(storeType.equals("4store")){
 		try{
+		Store store = new Store("http://localhost:8001");
 		String response = store.query(query,Store.OutputFormat.TAB_SEPARATED,100);
 		StoreResponse=response;
 		System.out.println("\n "+msg);
@@ -17,6 +19,10 @@ public class Query {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		}
+		else{
+			System.out.println("Store not currently supported");
 		}
 	}
 	
