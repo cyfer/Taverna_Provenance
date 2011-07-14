@@ -46,19 +46,21 @@ public class Provenance {
         +"PREFIX myont:<https://github.com/cyfer/Taverna_Provenance/wiki/Ontology#>";
 	
 	protected static String UID="";
+	protected static String pureUID="";
 	protected static String currentGraphURI="";
 	private static Boolean newGraphInserted=false;
-	private static Boolean createCSVFile=false;
+	protected static Boolean createCSVFile=false;
 	private static Boolean taskIssued=false;
 	private static Boolean tavernaDirSet=false;
 	private static Boolean insertProvenanceDataInStore=false;
 	private static Boolean noInput=false;         // whether or not  t2flow file is specified as input. Only in the case of -a without arguments this is true
 	private static String provenanceOuputDir="";
 	private static int resultOption=0;
-	private static String filePathForCSV="";
-	private static int querySoftLimit= 200;
+	protected static String filePathForCSV="";
+	private static int querySoftLimit= 400;
 	private static String tripleStore="4store";
 	private static Vector<String> supportedTripleStores=new Vector<String>();
+	private static String storeResponse="";
 	
 	public static void main(String[] args) {
 		
@@ -100,7 +102,7 @@ public class Provenance {
 		        	  }
 		        		  
 		        		  
-		        	  break;
+		        	  
 		        	}
 		         
 		          case 't':{
@@ -112,10 +114,10 @@ public class Provenance {
 		            t2FlowLocation = g.getOptarg();
 		            System.out.println (t2FlowLocation);
 		            taskIssued=true;
-		            insertProvenanceDataInStore=true;
+		            insertProvenanceDataInStore=true;   //true
 		            noInput=false;
 		            resultOption=2;
-		            break;
+		            
 		          }
 		         
 		          case 's':{
@@ -131,7 +133,7 @@ public class Provenance {
 		        	  insertProvenanceDataInStore=true;
 		        	  noInput=false;
 		        	  resultOption=3;
-		        	  break;
+		        	  
 		          }
 		          
 		          case 'p':{
@@ -171,6 +173,7 @@ public class Provenance {
 		        	  filePathForCSV= g.getOptarg();
 		        	  System.out.println("A csv file will be generated at :"+filePathForCSV); 
 		        	  createCSVFile=true;
+		        	 
 		          }
 		          case 'l':{
 		        	  try{
@@ -182,7 +185,7 @@ public class Provenance {
 		        	    catch(NumberFormatException e){
 		        	       //user inserted something else
 		        	    }
-
+                     
 		        	   
 		          }
 		          case 'k':{
@@ -194,6 +197,7 @@ public class Provenance {
 		        	    	  System.out.println(entry);
 		        	      }
 		        	  }
+		        	  
 		        	  }
 		            //
 		          case '?':
@@ -254,29 +258,34 @@ public class Provenance {
 				switch(resultOption){
 				
 				case 1:{
-					 findWSDLServicesForEveryProvenanceGraph();
+					storeResponse= findWSDLServicesForEveryProvenanceGraph();
 					 break;
 				       }
 				case 2:{
-					if (newGraphInserted)
-						findWSDLServicesForCurrentProvenanceGraph();
+					if (newGraphInserted){
+						storeResponse=findWSDLServicesForCurrentProvenanceGraph();
+					       break;}
 					else
-						System.out.println("Graph was not inserted because it is already present in the KB. Returning results from old graph.");
-					    findWSDLServicesForCurrentProvenanceGraph();
+						{System.out.println("Graph was not inserted because it is already present in the KB. Returning results from old graph.");
+						storeResponse= findWSDLServicesForCurrentProvenanceGraph();
 					    
 					    break;
+						}
 				       }
 				case 3:{
-					findWSDLServicesForCurrentAndAssociatedProvenanceGraphs();
+					storeResponse=findWSDLServicesForCurrentAndAssociatedProvenanceGraphs();
 					break;
 					   }
 				case 4:{
-					findWSDLServicesForWorkflowUID();
+					storeResponse=findWSDLServicesForWorkflowUID();
 					break;
 				}
 				}
+		
+			//Step 2.7 : Annotate Biocatalogue with: 1)Example data for inputs and outputs	, 2) Example workflows that use the wsdl services identified, found through MyExperiment SPARQL endpoint
+				annotateBioCatalogue(storeResponse);
 				
-					
+				
 			 }
 				catch (MalformedURLException e) {
 					e.printStackTrace();
@@ -355,6 +364,7 @@ private static void loadProvenanceFileInStore(String graph, Boolean insert){
 	//response=parseResponse(response,"\"");           //parse server response to get actual id string
 	UID=response.substring(response.indexOf("<")+1, response.indexOf(">"));
 	System.out.println("UID:"+UID);
+	pureUID=UID.substring(UID.indexOf("janus#/")+7);
 	String findWorkflowRunQuery= prefixes+"SELECT ?runURI WHERE { GRAPH <https://github.com/cyfer/Taverna_Provenance/wiki/tempprovenance> { ?runURI rdf:type j:workflow_run }} LIMIT 100";
 	newQuery= new Query(findWorkflowRunQuery,tripleStore,"Getting workflow run id...");    //get unique workflow id
 	response=newQuery.getStoreResponse();
@@ -609,6 +619,8 @@ protected static String  findWSDLServicesForCurrentProvenanceGraph(){
 		 generateCsvFile(filePathForCSV+"SingleGraphCSV.csv",newQuery.getStoreResponse());
 		 System.out.println("CSV file: SingleGraphCSV.csv has been created in directory "+filePathForCSV);
 		 }
+	 	 
+	 	 
 	 return newQuery.getStoreResponse();
 	} 
 
@@ -633,6 +645,8 @@ protected static String findWSDLServicesForCurrentAndAssociatedProvenanceGraphs(
 		 generateCsvFile(filePathForCSV+"CurrentAndAssociatedCSV.csv",newQuery.getStoreResponse());
 		 System.out.println("CSV file: CurrentAndAssociatedCSV.csv has been created in directory "+filePathForCSV);
 		 }
+	 
+	 
 	 return newQuery.getStoreResponse();
 	}
 
@@ -651,6 +665,7 @@ protected static String findWSDLServicesForWorkflowUID(){
 	+"	}"
 	+"LIMIT"+querySoftLimit;
 	 Query newQuery=new Query(wsdlQuery,tripleStore,"Getting wsdl services for specified workflow...");
+	 
 	 if(createCSVFile){
 		 generateCsvFile(filePathForCSV+"WorkflowSpecificProvenanceCSV.csv",newQuery.getStoreResponse());
 		 System.out.println("CSV file: WorkflowSpecificProvenanceCSV.csv has been created in directory "+filePathForCSV);
@@ -712,6 +727,60 @@ private static void generateCsvFile(String fileName, String response)
 	     e.printStackTrace();
 	} 
  }
+
+protected static List<ResultBindings> parseQueryResults(String response){
+	response=response.replaceAll("\n", "\t");
+	String responseInArray[]=response.split("\t");
+	List<ResultBindings> resultBindings=new  Vector<ResultBindings>();
+	
+	
+	for (int i=5;i<responseInArray.length;i++){
+    	
+    	if(responseInArray[i].contains("^^")){
+    		int indexOfEnd=responseInArray[i].indexOf("^^");
+	        String tmp=responseInArray[i].substring(1, indexOfEnd-1);
+	        responseInArray[i]=tmp;
+    	}
+    	
+	}
+	
+	//System.out.println("Array length"+responseInArray.length);
+	for (int i=5;i<responseInArray.length;i++){
+		
+		if((i+4)%5==0){      // get port and value bindings and put them in a vector
+			resultBindings.add(new ResultBindings(responseInArray[i],responseInArray[i+1],responseInArray[i+2],responseInArray[i+3]));
+		    
+		}
+		
+	}
+	/**
+	for(ResultBindings entry:resultBindings){
+		System.out.println("Port:"+entry.getPort()+" \n Value:"+entry.getValue()+" \n Service:"+entry.getService()+" \n url:"+entry.getServiceURL() );
+	}
+	*/
+	
+	return resultBindings;
+    
+	
+}
+
+protected static void annotateBioCatalogue(String storeResponse){
+	try {
+		String myExperimentQuery= "PREFIX mecomp: <http://rdf.myexperiment.org/ontologies/components/>"
+	        +"PREFIX dcterms: <http://purl.org/dc/terms/>"
+	        +"PREFIX mebase: <http://rdf.myexperiment.org/ontologies/base/>"
+	        +"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>"
+
+	       +"SELECT ?s WHERE {"
+	       +"?s dcterms:identifier ?o .  FILTER (regex(str(?o), '"+pureUID+"'))"    //example : bb9ce24e-4a54-4111-a4fe-a55d0e80ff95
+	       +"} LIMIT 200";
+		MyExperimentConnection testMyExp=new MyExperimentConnection(myExperimentQuery);
+		BioCatConnection connection=new BioCatConnection(parseQueryResults(storeResponse),testMyExp.getExampleWorkflows());
+	} catch (IOException e) {
+		
+		e.printStackTrace();
+	}
+}
 
 
 protected static String parseResponse(String response, String delimiter){

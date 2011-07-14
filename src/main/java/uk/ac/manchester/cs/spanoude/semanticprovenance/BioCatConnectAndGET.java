@@ -3,12 +3,12 @@ package uk.ac.manchester.cs.spanoude.semanticprovenance;
 import java.net.*;
 import java.io.*;
 
-public class ConnectAndGET {
+public class BioCatConnectAndGET {
 
 private InputStream serverResponse = null;
 final String USER_AGENT = "Emmanouil Spanoudakis";
 
-	public ConnectAndGET(String urlToConnectTo) throws IOException{
+	public BioCatConnectAndGET(String urlToConnectTo) throws IOException{
 		URL url = new URL(urlToConnectTo);
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection(); 
 		conn.setRequestMethod("GET");
@@ -42,6 +42,10 @@ final String USER_AGENT = "Emmanouil Spanoudakis";
 	public InputStream getServerResponse() {
 		return serverResponse;
 	}
+	
+	//public void killConnection(){
+	//	conn.disconnect();
+	//}
 	
 	
 }

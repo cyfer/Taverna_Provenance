@@ -7,14 +7,14 @@ import java.net.URL;
 
 import sun.misc.BASE64Encoder;
 
-public class ConnectAndPOST {
+public class BioCatConnectAndPOST {
 
 	
 	private InputStream serverResponse = null;
 	final String USER_AGENT = "Emmanouil Spanoudakis";
 	
 	
-	public ConnectAndPOST(String urlToConnectTo, String JSONtoPOST) throws IOException{
+	public BioCatConnectAndPOST(String urlToConnectTo, String JSONtoPOST) throws IOException{
 		
 		final StringBuilder text = new StringBuilder();
 		String userpassword ="dragonfighter@gmail.com:19851988";

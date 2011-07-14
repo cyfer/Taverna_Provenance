@@ -23,7 +23,9 @@ public class TestProvenance {
  public void createStoreConnection(){
 	 provTest.UID="http://purl.org/taverna/janus#/46638a04-ed74-4c6a-af23-84dffd3470f6" ;
 	 provTest.currentGraphURI="https://github.com/cyfer/Taverna_Provenance/wiki/provenance/d176f9ae-7666-4595-a12b-a1e25a6b15e8";
- try {
+     provTest.createCSVFile=true;
+     provTest.filePathForCSV="/Users/dragonfighter/Documents/Master_Thesis/workflows/";
+	 try {
 	 store = new Store("http://localhost:8001");
 	   
  }
@@ -35,6 +37,7 @@ public class TestProvenance {
    
  }
  
+ /**
  @Test
  public void testFindWSDLServicesForEveryProvenanceGraph(){
 	assertTrue("FindWSDLServicesForEveryProvenanceGraph Query did not run correctly", provTest.findWSDLServicesForEveryProvenanceGraph().contains("?processor") );
@@ -60,6 +63,12 @@ public class TestProvenance {
  @Test
  public void testParseResponse(){
 	 assertEquals("test",provTest.parseResponse("|test|","|"));
+ }
+  */
+
+ @Test
+ public void testParseQueryResults(){
+	 assertTrue("Array in empty",provTest.parseQueryResults(provTest.findWSDLServicesForWorkflowUID()).size()>0);
  }
  
  

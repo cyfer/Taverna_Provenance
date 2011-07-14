@@ -1,0 +1,137 @@
+<rdf:RDF
+    xmlns:obo="http://obofoundry.org/ro/ro.owl#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:knoesis="http://knoesis.wright.edu/provenir/provenir.owl#"
+    xmlns:janus="http://purl.org/taverna/janus#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" > 
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot_output/return">
+    <janus:has_value_binding rdf:resource="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99?c1db0c4d-38db-4a07-9420-1232c2a82814"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">return</rdfs:comment>
+    <janus:is_processor_input rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</janus:is_processor_input>
+    <janus:has_port_order rdf:datatype="http://www.w3.org/2001/XMLSchema#long">0</janus:has_port_order>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#port"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/dataflow0/GoTerms">
+    <janus:has_value_binding rdf:resource="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99?c1db0c4d-38db-4a07-9420-1232c2a82814"/>
+    <janus:links_from rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot_output/return"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">GoTerms</rdfs:comment>
+    <janus:is_processor_input rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</janus:is_processor_input>
+    <janus:has_port_order rdf:datatype="http://www.w3.org/2001/XMLSchema#long">0</janus:has_port_order>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#port"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99?cbc8234e-ce90-479d-9624-a1ba5ced61bf/false/1">
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#collection_structure"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot_output">
+    <knoesis:has_parameter rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot_output/return"/>
+    <knoesis:has_parameter rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot_output/input"/>
+    <obo:part_of rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">getGoTermsFromUniprot_output</rdfs:comment>
+    <janus:is_top_level rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</janus:is_top_level>
+    <janus:has_processor_type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">net.sf.taverna.t2.activities.wsdl.xmlsplitter.XMLOutputSplitterActivity</janus:has_processor_type>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#processor_spec"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot_output/input">
+    <janus:has_value_binding rdf:resource="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99?a7f2c04f-6c0a-47f2-b98d-2a848fd7529c"/>
+    <janus:links_from rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot/parameters"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">input</rdfs:comment>
+    <janus:is_processor_input rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</janus:is_processor_input>
+    <janus:has_port_order rdf:datatype="http://www.w3.org/2001/XMLSchema#long">0</janus:has_port_order>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#port"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot_input/output">
+    <janus:has_value_binding rdf:resource="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99?90d96ae6-30ef-4956-b183-d1d35b0b86df"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">output</rdfs:comment>
+    <janus:is_processor_input rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</janus:is_processor_input>
+    <janus:has_port_order rdf:datatype="http://www.w3.org/2001/XMLSchema#long">0</janus:has_port_order>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#port"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99?a7f2c04f-6c0a-47f2-b98d-2a848fd7529c">
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">&lt;ns:getGoTermsFromUniprotResponse xmlns:ns="http://uniprot.ora.com"&gt;&lt;ns:return&gt;Error has occured:UniprotAPI libraries are not up-to-date. Service API version:2011_07
+Download most up-to-date API libraries from: http://www.ebi.ac.uk/uniprot/remotingAPI/index.html&lt;/ns:return&gt;&lt;/ns:getGoTermsFromUniprotResponse&gt;</rdfs:comment>
+    <janus:has_port_value_order rdf:datatype="http://www.w3.org/2001/XMLSchema#long">1</janus:has_port_value_order>
+    <janus:has_iteration rdf:datatype="http://www.w3.org/2001/XMLSchema#string">[]</janus:has_iteration>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#port_value"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99">
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#workflow_run"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99?90d96ae6-30ef-4956-b183-d1d35b0b86df">
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">&lt;parameters xmlns="http://uniprot.ora.com"&gt;&lt;uniprotIds&gt;A2ABK7&lt;/uniprotIds&gt;&lt;/parameters&gt;</rdfs:comment>
+    <janus:has_port_value_order rdf:datatype="http://www.w3.org/2001/XMLSchema#long">1</janus:has_port_value_order>
+    <janus:has_iteration rdf:datatype="http://www.w3.org/2001/XMLSchema#string">[]</janus:has_iteration>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#port_value"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot_input/uniprotIds">
+    <janus:has_value_binding rdf:resource="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99?8c330b22-237e-4a87-8c39-24bb12c61dbd"/>
+    <janus:links_from rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/dataflow0/UniprotIds"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">uniprotIds</rdfs:comment>
+    <janus:is_processor_input rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</janus:is_processor_input>
+    <janus:has_port_order rdf:datatype="http://www.w3.org/2001/XMLSchema#long">0</janus:has_port_order>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#port"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/dataflow0">
+    <knoesis:has_parameter rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/dataflow0/UniprotIds"/>
+    <knoesis:has_parameter rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/dataflow0/GoTerms"/>
+    <obo:part_of rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">dataflow0</rdfs:comment>
+    <janus:is_top_level rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</janus:is_top_level>
+    <janus:has_processor_type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">net.sf.taverna.t2.activities.dataflow.DataflowActivity</janus:has_processor_type>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#processor_spec"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99?a24f5e17-d249-464d-8653-0611b983f6d0/false/1">
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#collection_structure"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99?c1db0c4d-38db-4a07-9420-1232c2a82814">
+    <obo:part_of rdf:resource="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99?cbc8234e-ce90-479d-9624-a1ba5ced61bf/false/1"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Error has occured:UniprotAPI libraries are not up-to-date. Service API version:2011_07
+Download most up-to-date API libraries from: http://www.ebi.ac.uk/uniprot/remotingAPI/index.html</rdfs:comment>
+    <janus:has_port_value_order rdf:datatype="http://www.w3.org/2001/XMLSchema#long">1</janus:has_port_value_order>
+    <janus:has_iteration rdf:datatype="http://www.w3.org/2001/XMLSchema#string">[0]</janus:has_iteration>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#port_value"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95">
+    <janus:has_execution rdf:resource="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">bb9ce24e-4a54-4111-a4fe-a55d0e80ff95</rdfs:comment>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#workflow_spec"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot_input">
+    <knoesis:has_parameter rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot_input/output"/>
+    <knoesis:has_parameter rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot_input/uniprotIds"/>
+    <obo:part_of rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">getGoTermsFromUniprot_input</rdfs:comment>
+    <janus:is_top_level rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</janus:is_top_level>
+    <janus:has_processor_type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">net.sf.taverna.t2.activities.wsdl.xmlsplitter.XMLInputSplitterActivity</janus:has_processor_type>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#processor_spec"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99?8c330b22-237e-4a87-8c39-24bb12c61dbd">
+    <obo:part_of rdf:resource="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99?a24f5e17-d249-464d-8653-0611b983f6d0/false/1"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">A2ABK7</rdfs:comment>
+    <janus:has_port_value_order rdf:datatype="http://www.w3.org/2001/XMLSchema#long">1</janus:has_port_value_order>
+    <janus:has_iteration rdf:datatype="http://www.w3.org/2001/XMLSchema#string">[0]</janus:has_iteration>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#port_value"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot/parameters">
+    <janus:has_value_binding rdf:resource="http://purl.org/taverna/janus#/27fcbd2b-e248-4f35-b16e-ebd5c6d25d99?a7f2c04f-6c0a-47f2-b98d-2a848fd7529c"/>
+    <janus:links_from rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot_input/output"/>
+    <janus:is_processor_input rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</janus:is_processor_input>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">parameters</rdfs:comment>
+    <janus:is_processor_input rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</janus:is_processor_input>
+    <janus:has_port_order rdf:datatype="http://www.w3.org/2001/XMLSchema#long">0</janus:has_port_order>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#port"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/dataflow0/UniprotIds">
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">UniprotIds</rdfs:comment>
+    <janus:is_processor_input rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</janus:is_processor_input>
+    <janus:has_port_order rdf:datatype="http://www.w3.org/2001/XMLSchema#long">0</janus:has_port_order>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#port"/>
+  </rdf:Description>
+  <rdf:Description rdf:about="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot">
+    <knoesis:has_parameter rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95/getGoTermsFromUniprot/parameters"/>
+    <obo:part_of rdf:resource="http://purl.org/taverna/janus#/bb9ce24e-4a54-4111-a4fe-a55d0e80ff95"/>
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">getGoTermsFromUniprot</rdfs:comment>
+    <janus:is_top_level rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</janus:is_top_level>
+    <janus:has_processor_type rdf:datatype="http://www.w3.org/2001/XMLSchema#string">net.sf.taverna.t2.activities.wsdl.WSDLActivity</janus:has_processor_type>
+    <rdf:type rdf:resource="http://purl.org/taverna/janus#processor_spec"/>
+  </rdf:Description>
+</rdf:RDF>
