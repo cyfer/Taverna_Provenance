@@ -34,13 +34,14 @@ public class BioCatConnection {
 		port=result.getPort();
 		value=result.getValue();
 		
-		//---TODO
-		//Check if service exists in biocatalogue -lookup
+				
+		
 		//--TODO
       	
 		//Step 1. get Soap Services and operations
 		SoapService servicesData;  
 		try {
+			System.out.println(urlToConnectTo+serviceURL);
 			BioCatConnectAndGET testConnect=new BioCatConnectAndGET(urlToConnectTo+serviceURL);
 			servicesData =  SoapServiceDocument.Factory.parse(testConnect.getServerResponse()).getSoapService();
 			//System.out.println(servicesData.getName());
@@ -66,7 +67,7 @@ public class BioCatConnection {
 		// Add annotations for inputs			  
 			  for(int i=0;i<inputArray.length;i++){
 		    	  if(inputArray[i].getName().equals(port)){
-				//System.out.println("Input"+i+" for service:"+inputArray[i].getName());
+				System.out.println("Input"+i+" for service:"+inputArray[i].getName());
 		    	String inputURL=inputArray[i].getHref();
 		    	//System.out.println(inputURL);
 		    	postAnnotations(inputURL,"example_data",value);
@@ -83,17 +84,22 @@ public class BioCatConnection {
 				  }
 			  }
 		
+	  		  
 	  // Add example workflow annotation
 		if(exampleWorkflowList.size()>1){
+			for(int i=1;i<exampleWorkflowList.size();i++){
 			System.out.println("service url:"+actualURL);
 			System.out.println(exampleWorkflowList.elementAt(0));
-			if(exampleWorkflowList.elementAt(0).contains("\"")){
-				exampleWorkflowList.set(1, parseString(exampleWorkflowList.elementAt(1),"\""));
+			if(exampleWorkflowList.elementAt(i).contains("\"")){
+			 exampleWorkflowList.set(i, parseString(exampleWorkflowList.elementAt(i),"\""));
 			}
-		 	postAnnotations(actualURL,"example_workflow",exampleWorkflowList.elementAt(1));
-			
+		 	postAnnotations(actualURL,"example_workflow",exampleWorkflowList.elementAt(i));
 		}
-			  
+		}
+		else{
+			System.out.println("No example workflow URL was found in MyExperiment");
+		}
+			
 			break;
 			   }
 		}

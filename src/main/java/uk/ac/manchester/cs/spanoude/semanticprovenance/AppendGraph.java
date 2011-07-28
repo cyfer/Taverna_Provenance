@@ -5,30 +5,36 @@ import java.net.MalformedURLException;
 
 import uk.co.magus.fourstore.client.Store;
 
-public class AppendGraph {
+public abstract class AppendGraph {
 
-	public AppendGraph(String graph, String URI,String storeType,String msg,int inputFormat){
-		if(storeType.equals("4store")){
-		try {
-			Store store = new Store("http://localhost:8001");
-			String response="";
-			System.out.println("Appending graph");
-			if (inputFormat==1){
-			response = store.append(URI, graph, Store.InputFormat.XML);
-			}
-			else if(inputFormat==2){
-				response = store.append(URI, graph, Store.InputFormat.TURTLE);
-			}
-			System.out.println(response);
-			System.out.println(msg);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+	String graph;
+	String URI;
+	String storeLocation;
+	String msg;
+	int inputFormat;
+	
+	public void AppendGraph(String graph, String URI,String storeLocation,String msg,int inputFormat){
+		
+		this.graph=graph;
+		this.URI=URI;
+		this.storeLocation=storeLocation;
+		this.msg=msg;
+		this.inputFormat=inputFormat;
+		
+		Object store = getKBInstance(storeLocation ); //storeLocation   "http://localhost:8001"
+		System.out.println("Appending graph");
+		if (inputFormat==1){
+			appendInXMLFormat(graph, URI,msg, store);
 		}
-		}
-		else{
-			System.out.println("Store not currently supported");
+		else if(inputFormat==2){
+			appendInTurtleFormat(graph, URI,msg, store);
 		}
 	}
+	
+	abstract Object getKBInstance(String storeLocation);
+	abstract void appendInXMLFormat(String graph, String URI,String msg,Object KB);
+	abstract void appendInTurtleFormat(String graph, String URI,String msg,Object KB);
+		
+		
+	
 }

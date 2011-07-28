@@ -1,37 +1,31 @@
 package uk.ac.manchester.cs.spanoude.semanticprovenance;
-import java.io.IOException;
-import java.net.MalformedURLException;
 
-import uk.co.magus.fourstore.client.Store;
+public abstract class AddGraph {
 
-public class AddGraph {
+	String graph;
+	String URI;
+	String storeLocation;
+	String msg;
+	int inputFormat;
 	
-	// "https://github.com/cyfer/Taverna_Provenance/wiki/Ontology#"
-	
-	public AddGraph(String graph, String URI,String storeType,String msg,int inputFormat){
-		if(storeType.equals("4store")){
-		try {
-			Store store = new Store("http://localhost:8001");
-			String response=""; 			
-			System.out.println("Adding graph");
-			if (inputFormat==1){
-			response = store.add(URI,
-					graph, Store.InputFormat.XML);
-			}
-			else if(inputFormat==2){
-				response = store.add(URI,
-						graph, Store.InputFormat.TURTLE);
-			}
-			System.out.println(response);
-			System.out.println(msg);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+	public  void AddGraph(String graph, String URI,String storeLocation,String msg,int inputFormat){
+		this.graph=graph;
+		this.URI=URI;
+		this.storeLocation=storeLocation;
+		this.msg=msg;
+		this.inputFormat=inputFormat;
+		
+		Object store = getKBInstance(storeLocation ); //storeLocation   "http://localhost:8001"
+		System.out.println("Adding graph");
+		if (inputFormat==1){
+			addInXMLFormat(graph, URI,msg, store);
 		}
-		}
-		else{
-			System.out.println("Store not currently supported");
+		else if(inputFormat==2){
+			addInTurtleFormat(graph, URI,msg, store);
 		}
 	}
+	
+	abstract Object getKBInstance(String storeLocation);
+	abstract void addInXMLFormat(String graph, String URI,String msg,Object KB);
+	abstract void addInTurtleFormat(String graph, String URI,String msg,Object KB);
 }

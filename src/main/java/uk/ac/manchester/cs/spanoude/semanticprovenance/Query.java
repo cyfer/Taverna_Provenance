@@ -3,30 +3,29 @@ import uk.co.magus.fourstore.client.Store;
 import java.io.IOException;
 import java.net.MalformedURLException;
 
-public class Query {
-	private String StoreResponse="";
-
-	public Query(String query,String storeType,String msg){
-		if(storeType.equals("4store")){
-		try{
-		Store store = new Store("http://localhost:8001");
-		String response = store.query(query,Store.OutputFormat.TAB_SEPARATED,100);
-		StoreResponse=response;
-		System.out.println("\n "+msg);
-		System.out.println(response);
-		}
-		catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		}
-		else{
-			System.out.println("Store not currently supported");
-		}
+public abstract class Query {
+    String StoreResponse="";
+	String query;
+	String storeLocation;
+	String msg;
+	int softLimit;
+	
+	public void Query(String query,String storeLocation,String msg,int softLimit){
+		this.query=query;
+		this.storeLocation=storeLocation;
+		this.msg=msg;
+		this.softLimit=softLimit;
+		
+		Object store = getKBInstance(storeLocation ); //storeLocation   "http://localhost:8001"
+		System.out.println("Querying KB..");
+		StoreResponse=queryKB(query,storeLocation,msg,softLimit,store);
+			
 	}
 	
 	public String getStoreResponse(){
 		return StoreResponse;
 	}
+	
+	abstract Object getKBInstance(String storeLocation);
+	abstract String queryKB(String query, String storeLocation,String msg,int softLimit,Object KB);
 }

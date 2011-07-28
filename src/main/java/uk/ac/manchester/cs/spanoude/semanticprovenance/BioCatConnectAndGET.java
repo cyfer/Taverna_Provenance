@@ -14,7 +14,9 @@ final String USER_AGENT = "Emmanouil Spanoudakis";
 		conn.setRequestMethod("GET");
 		conn.setRequestProperty("User-Agent", USER_AGENT); 
 		conn.setRequestProperty("Accept", "application/xml");
+
 		int iResponseCode = conn.getResponseCode(); 
+		
 		
 		switch (iResponseCode) {
 		case HttpURLConnection.HTTP_OK: // regular operation Ñ can directly use the response data input stream 
@@ -27,7 +29,8 @@ final String USER_AGENT = "Emmanouil Spanoudakis";
 		    {System.out.println("nothing");
 		    break;}
 		case HttpURLConnection.HTTP_NOT_FOUND: // nothing was found at the provided URL Ð may try to use error stream // (or just do nothing) 
-			{serverResponse = conn.getErrorStream();
+			{   System.out.println("Not found");
+				serverResponse = conn.getErrorStream();
 			break;}
 		default: // unexpected response code - raise an exception 
 			throw new IOException("Received unexpected HTTP response code (" +
