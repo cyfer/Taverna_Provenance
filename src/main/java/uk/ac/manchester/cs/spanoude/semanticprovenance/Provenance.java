@@ -46,16 +46,21 @@ public class Provenance {
 	private static Boolean tavernaDirSet=false;
 	private static Boolean insertProvenanceDataInStore=false;
 	private static Boolean noInput=false;         // whether or not  t2flow file is specified as input. Only in the case of -a without arguments this is true
+	private static Boolean annotate=false; 
 	private static String provenanceOuputDir="";
 	private static int resultOption=0;
+	protected static String credentials="";
 	protected static String filePathForCSV="";
 	private static int querySoftLimit= 400;
 	private static String tripleStore="4Store";
 	private static Vector<String> supportedTripleStores=new Vector<String>();
 	private static String storeResponse="";
 	private static String storeLocation="http://localhost:8001";
+	private static String service="BioCatalogue";
 	private static String classPackage="uk.ac.manchester.cs.spanoude.semanticprovenance.";
 	protected static GraphOperationFactory graphOperationFactory= new GraphOperationFactory() ;
+	protected static ConnectionFactory connectionFactory=new ConnectionFactory();
+	protected static String connectionCredentials="";
 	
 	public static void main(String[] args) throws SecurityException, IllegalArgumentException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
 		
@@ -65,7 +70,7 @@ public class Provenance {
 		String tavernaDir="";	
 		supportedTripleStores.addElement("4Store");
 		//fix getOpt Start
-		LongOpt[] longopts = new LongOpt[11];
+		LongOpt[] longopts = new LongOpt[13];
 		longopts[0] = new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h');
 		longopts[1] = new LongOpt("all", LongOpt.OPTIONAL_ARGUMENT, null, 'a');
 		longopts[2] = new LongOpt("this", LongOpt.REQUIRED_ARGUMENT, null, 't');
@@ -77,8 +82,10 @@ public class Provenance {
 		longopts[8] = new LongOpt("triplestorename", LongOpt.REQUIRED_ARGUMENT, null, 'k');
 		longopts[9] = new LongOpt("triplestorelocation", LongOpt.REQUIRED_ARGUMENT, null, 'b');
 		longopts[10] = new LongOpt("package", LongOpt.REQUIRED_ARGUMENT, null, 'g');
+		longopts[11] = new LongOpt("annotate", LongOpt.REQUIRED_ARGUMENT, null, 'o');
+		longopts[12] = new LongOpt("credentials", LongOpt.REQUIRED_ARGUMENT, null, 'e');
 		
-		Getopt g = new Getopt("Provenance Processor", args, "a::t:s:p:c:d:l:k:b:g:h",longopts);   
+		Getopt g = new Getopt("Provenance Processor", args, "a::t:s:p:c:d:l:k:b:g:o:e:h",longopts);   
 		 //
 		 int c;
 		 String t2FlowLocation="";
@@ -159,19 +166,24 @@ public class Provenance {
 		          }
 			            
 		          case 'h':{
-		        	  System.out.println("For long options, use --Option=argument or --Option if no argument is needed. For short option use -option <space> argument or -option if no argument is needed. -a short option must be written as -a<argument> (no space between -a and argument) if an argument must be specified");
-		        	  System.out.println("Long: --all  |  Short: -a<Workflow .t2flow filepath -OPTIONAL- <Workflow variables in the form PORTNAME PORTVALUE if workflow is specified>  NOTE: If you want to specify a workflow to be inserted leave no space. eg. -a/Users/Me/workflow.t2flow. Returns provenance information for all graphs currently present in the triple store. If the optional argument is specified, the workflow is run and inserted in the triple store prior to querying");
-		        	  System.out.println("Long: --this |  Short: -t <Workflow .t2flow filepath -REQUIRED-> <Workflow variables in the form PORTNAME PORTVALUE>  The specified workflow is run and inserted in the triple store. Provenance information of the inserted graph only is returned");
-		        	  System.out.println("Long: --same |  Short: -s <Workflow .t2flow filepath -REQUIRED-> <Workflow variables in the form PORTNAME PORTVALUE> The specified workflow is run and inserted in the triple store. All provenance information, including past provenance, regarding the specified workflow is returned");
-		        	  System.out.println("Long: --provenance  | Short: -p <Workflow .t2flow filepath -REQUIRED-> <Workflow variables in the form PORTNAME PORTVALUE> The specified workflow is run and parsed. All provenance information, including past provenance, regarding the specified workflow is returned. No new data is inserted in the triple store");
-		        	  System.out.println("Long: --csvlocation | Short: -c <System directory for .csv file creation -REQUIRED-> A .csv file is created at the specified directory containing the query results of -a, -t, -s or -p flags ");
-		        	  System.out.println("Long: --tavernadirectory | Short: -d <Taverna directory -REQUIRED-> System directory of the Taverna program. Necessary");
-		        	  System.out.println("Long: --softlimit        | Short: -l <INTEGER -REQUIRED-> Sets Soft Limit for the queries. Default is 200 ");
-		        	  System.out.println("Long: --triplestorename  | Short: -k <STRING name of desired triple store -REQUIRED-> Sets the triple store to be used by the application. Default is 4Store. Give the store name, exactly as it appears in your classes eg. AddGraphTo4Store -> -k 4Store ");
-		        	  System.out.println("Long: --package          | Short: -g <STRING package name where the AddGraphToX and other classes reside -REQUIRED-> Defines the package for custom classes that will be registered to factory methods. Argument must be in the form: uk.ac.manchester.cs.spanoude.semanticprovenance. After the last .,there should be the Class names. Do NOT include class names in your argument");
-		        	  System.out.println("Long: --triplestorelocation | Short: -b <STRING location of triple store . eg: http://localhost:8001  -REQUIRED-> Sets the triple store location to be used by the application. Default is http://localhost:8001 . ");
-		        	  System.out.println("Long: --help                | Short: -h returns help information ");
-		        	  break;
+		        	  System.out.println("---------------------------------------------------------------------------------------------------------------------- \n");
+		        	  System.out.println("--| For long options, use --Option=argument or --Option if no argument is needed. For short option use -option <space> argument or -option if no argument is needed. -a short option must be written as -a<argument> (no space between -a and argument) if an argument must be specified");
+		        	  System.out.println("--| Long: --all  |  Short: -a<Workflow .t2flow filepath -OPTIONAL- <Workflow variables in the form PORTNAME PORTVALUE if workflow is specified>  NOTE: If you want to specify a workflow to be inserted leave no space. eg. -a/Users/Me/workflow.t2flow. Returns provenance information for all graphs currently present in the triple store. If the optional argument is specified, the workflow is run and inserted in the triple store prior to querying");
+		        	  System.out.println("--| Long: --this |  Short: -t <Workflow .t2flow filepath -REQUIRED-> <Workflow variables in the form PORTNAME PORTVALUE>  The specified workflow is run and inserted in the triple store. Provenance information of the inserted graph only is returned");
+		        	  System.out.println("--| Long: --same |  Short: -s <Workflow .t2flow filepath -REQUIRED-> <Workflow variables in the form PORTNAME PORTVALUE> The specified workflow is run and inserted in the triple store. All provenance information, including past provenance, regarding the specified workflow is returned");
+		        	  System.out.println("--| Long: --provenance  | Short: -p <Workflow .t2flow filepath -REQUIRED-> <Workflow variables in the form PORTNAME PORTVALUE> The specified workflow is run and parsed. All provenance information, including past provenance, regarding the specified workflow is returned. No new data is inserted in the triple store");
+		        	  System.out.println("--| Long: --csvlocation | Short: -c <System directory for .csv file creation -REQUIRED-> A .csv file is created at the specified directory containing the query results of -a, -t, -s or -p flags ");
+		        	  System.out.println("--| Long: --tavernadirectory | Short: -d <Taverna directory -REQUIRED-> System directory of the Taverna program. Necessary");
+		        	  System.out.println("--| Long: --softlimit        | Short: -l <INTEGER -REQUIRED-> Sets Soft Limit for the queries. Default is 200 ");
+		        	  System.out.println("--| Long: --triplestorename  | Short: -k <STRING name of desired triple store -REQUIRED-> Sets the triple store to be used by the application. Default is 4Store. Give the store name, exactly as it appears in your classes eg. AddGraphTo4Store -> -k 4Store ");
+		        	  System.out.println("--| Long: --package          | Short: -g <STRING package name where the AddGraphToX and other classes reside -REQUIRED-> Defines the package for custom classes that will be registered to factory methods. Argument must be in the form: uk.ac.manchester.cs.spanoude.semanticprovenance. After the last .,there should be the Class names. Do NOT include class names in your argument");
+		        	  System.out.println("--| Long: --triplestorelocation | Short: -b <STRING location of triple store . eg: http://localhost:8001  -REQUIRED-> Sets the triple store location to be used by the application. Default is http://localhost:8001 . ");
+		        	  System.out.println("--| Long: --annotate | Short: -o <STRING Service to annotate or use. Default=BioCatalogue  -REQUIRED-> Sets the service that the application will annotate or use after it has collected the required data. Don't forget to use the --credentials flag if the service you connect to requires authentication");
+		        	  System.out.println("--| Long: --credentials | Short: -e <STRING credentials to be used in connection authentication. Please  use the syntax: eg: username:password  -REQUIRED-> Sets the credentials(username and password) to be used in connection authentication");
+		        	  System.out.println("--| Long: --help                | Short: -h returns help information ");
+		        	  System.out.println("---------------------------------------------------------------------------------------------------------------------- \n");
+                      return;
+		        	  
 		          }
 		          case 'd':{
 		        	  tavernaDir= g.getOptarg();
@@ -183,7 +195,7 @@ public class Provenance {
 		        	  filePathForCSV= g.getOptarg();
 		        	  System.out.println("A csv file will be generated at :"+filePathForCSV); 
 		        	  createCSVFile=true;
-		        	 
+		        	  break;
 		          }
 		          case 'l':{
 		        	  try{
@@ -219,6 +231,17 @@ public class Provenance {
 		        	  System.out.println("class package: "+classPackage);
 		        	  break;
 		          }
+		          case 'o':{
+		        	  annotate=true;
+		        	  service=g.getOptarg();
+		        	  System.out.println("Service to annotate: "+classPackage+". Will use "+service+"Connection class for this purpose");
+		        	  break;
+		          }
+		          
+		          case 'e':{
+		        	  credentials=g.getOptarg();
+		        	  break;
+		          }
 		            //
 		          case '?':
 		            break; // getopt() already printed an error
@@ -236,7 +259,7 @@ public class Provenance {
 			 graphOperationFactory.registerTripleStoreOperation(tripleStore+"Append",Class.forName(classPackage+"AppendGraphTo"+tripleStore));
 			 graphOperationFactory.registerTripleStoreOperation(tripleStore+"Delete",Class.forName(classPackage+"DeleteGraphFrom"+tripleStore));
 			 graphOperationFactory.registerTripleStoreOperation(tripleStore+"Query",Class.forName(classPackage+"Query"+tripleStore));
-			 
+			 connectionFactory.registerServiceConnections(service+"Connection",Class.forName(classPackage+service+"Connection"));
 		 } catch (ClassNotFoundException e1) {
 			
 			e1.printStackTrace();
@@ -319,11 +342,12 @@ public class Provenance {
 				}
 				}
 		
-			//Step 2.7 : Annotate Biocatalogue with: 1)Example data for inputs and outputs	, 2) Example workflows that use the wsdl services identified, found through MyExperiment SPARQL endpoint
+				if(annotate){
+			//Step 2.7 : Annotate Service (Default=Biocatalogue) with: 1)Example data for inputs and outputs	, 2) Example workflows that use the wsdl services identified, found through MyExperiment SPARQL endpoint
 				//--Add an abstraction layer here in case someone wants to annotate something else?!
-				System.out.println("Annotating Biocatalogue...");
-				annotateBioCatalogue(storeResponse);
-				
+				System.out.println("Annotating "+service+"...");
+				annotateService(storeResponse);
+				}
 				
 			 }
 				catch (MalformedURLException e) {
@@ -808,7 +832,7 @@ protected static List<ResultBindings> parseQueryResults(String response){
 	
 }
 
-protected static void annotateBioCatalogue(String storeResponse){
+protected static void annotateService(String storeResponse) throws SecurityException, IllegalArgumentException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException{
 	try {
 		String myExperimentQuery= "PREFIX mecomp: <http://rdf.myexperiment.org/ontologies/components/>"
 	        +"PREFIX dcterms: <http://purl.org/dc/terms/>"
@@ -819,7 +843,8 @@ protected static void annotateBioCatalogue(String storeResponse){
 	       +"?s dcterms:identifier ?o .  FILTER (regex(str(?o), '"+pureUID+"'))"    //example : bb9ce24e-4a54-4111-a4fe-a55d0e80ff95
 	       +"} LIMIT 200";
 		MyExperimentConnection testMyExp=new MyExperimentConnection(myExperimentQuery);
-		BioCatConnection connection=new BioCatConnection(parseQueryResults(storeResponse),testMyExp.getExampleWorkflows());
+		connectionFactory.createConnection(service+"Connection",parseQueryResults(storeResponse),testMyExp.getExampleWorkflows(),credentials);
+		//BioCatalogueConnection connection=new BioCatalogueConnection(parseQueryResults(storeResponse),testMyExp.getExampleWorkflows());
 	} catch (IOException e) {
 		
 		e.printStackTrace();

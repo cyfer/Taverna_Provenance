@@ -151,7 +151,7 @@ public class ConnectionTester {
 	
 }
 	
-private static void postAnnotations(String toService) throws IOException{
+private static void postAnnotations(String toService,String credentials) throws IOException{
 	String JSONtestString="{"
 		  +"\"bulk_annotations\": [ {"
 		  + " \"resource\": \""+toService+"\","
@@ -160,6 +160,6 @@ private static void postAnnotations(String toService) throws IOException{
 		  + " }"
 		  +"}]}";
 			
-     BioCatConnectAndPOST testConnectAndPost=new BioCatConnectAndPOST("http://sandbox.biocatalogue.org/annotations/bulk_create",JSONtestString);
+     BioCatConnectAndPOST testConnectAndPost=new BioCatConnectAndPOST("http://sandbox.biocatalogue.org/annotations/bulk_create",JSONtestString,credentials);
 	}
 }

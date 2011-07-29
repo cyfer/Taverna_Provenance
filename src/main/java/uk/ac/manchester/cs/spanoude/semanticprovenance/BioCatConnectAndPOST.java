@@ -14,10 +14,10 @@ public class BioCatConnectAndPOST {
 	final String USER_AGENT = "Emmanouil Spanoudakis";
 	
 	
-	public BioCatConnectAndPOST(String urlToConnectTo, String JSONtoPOST) throws IOException{
+	public BioCatConnectAndPOST(String urlToConnectTo, String JSONtoPOST,String connectionCredentials) throws IOException{
 		
 		final StringBuilder text = new StringBuilder();
-		String userpassword ="dragonfighter@gmail.com:19851988";
+		String userpassword = connectionCredentials;//"dragonfighter@gmail.com:19851988";
 		BASE64Encoder enc = new sun.misc.BASE64Encoder();
 		String encodedAuthorization = enc.encode( userpassword.getBytes() );
 		try{
