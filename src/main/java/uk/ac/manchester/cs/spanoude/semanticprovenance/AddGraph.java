@@ -23,6 +23,9 @@ public abstract class AddGraph {
 		else if(inputFormat==2){
 			addInTurtleFormat(graph, URI,msg, store);
 		}
+		else{
+			System.out.println("Error Specifying inputFormat variable. Values accepted are 1 and 2");
+		}
 	}
 	
 	abstract Object getKBInstance(String storeLocation);

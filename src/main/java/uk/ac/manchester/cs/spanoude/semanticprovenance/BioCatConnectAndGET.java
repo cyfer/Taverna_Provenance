@@ -7,6 +7,7 @@ public class BioCatConnectAndGET {
 
 private InputStream serverResponse = null;
 final String USER_AGENT = "Emmanouil Spanoudakis";
+private int iResponseCode=0;
 
 	public BioCatConnectAndGET(String urlToConnectTo) throws IOException{
 		URL url = new URL(urlToConnectTo);
@@ -15,7 +16,9 @@ final String USER_AGENT = "Emmanouil Spanoudakis";
 		conn.setRequestProperty("User-Agent", USER_AGENT); 
 		conn.setRequestProperty("Accept", "application/xml");
 
-		int iResponseCode = conn.getResponseCode(); 
+		conn.setFollowRedirects(true);
+				
+		iResponseCode = conn.getResponseCode(); 
 		
 		
 		switch (iResponseCode) {
@@ -41,7 +44,10 @@ final String USER_AGENT = "Emmanouil Spanoudakis";
 		
 	}
 
-
+    public int getResponseCode(){
+    	return iResponseCode;
+    }
+	
 	public InputStream getServerResponse() {
 		return serverResponse;
 	}

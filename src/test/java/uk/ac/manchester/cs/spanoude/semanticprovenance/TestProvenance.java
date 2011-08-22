@@ -1,5 +1,6 @@
 package uk.ac.manchester.cs.spanoude.semanticprovenance;
 
+
 import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
@@ -32,17 +33,7 @@ public class TestProvenance {
      provTest.createCSVFile=false;
      provTest.filePathForCSV="/Users/dragonfighter/Documents/Master_Thesis/workflows/";
 	
-     /** try {
-	 store = new Store("http://localhost:8001");
-	 
-	   
- }
- catch (MalformedURLException e) {
-		e.printStackTrace();
-	} catch (IOException e) {
-		e.printStackTrace();
-	}
-	*/
+   
 	 try {
 			//Class.forName(classPackage+"AddGraphTo"+tripleStore);
 		 provTest.graphOperationFactory.registerTripleStoreOperation(tripleStore+"Add",Class.forName(classPackage+"AddGraphTo"+tripleStore));
@@ -93,17 +84,12 @@ public class TestProvenance {
  }
  
  
- /**
+ 
   @Test
 	public void testRunWorkflow() {
 		assertEquals("Success",provTest.runWorkflow(tavernaDir, args, workflowDir));
   }
-
-	@Test
-	public void testMain() {
-		fail("Not yet implemented");
-	}
-
-	*/
+  
 	
 }
+

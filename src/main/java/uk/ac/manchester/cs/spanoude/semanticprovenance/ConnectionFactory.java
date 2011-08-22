@@ -16,11 +16,11 @@ public class ConnectionFactory {
 	}
 
 	
-	public Connection createConnection(String serviceConnection,List<ResultBindings> resultsList, Vector<String> exampleWorkflowList, String connectionCredentials) throws SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException
+	public Connection createConnection(String serviceConnection,List<ResultBindings> resultsList, Vector<String> exampleWorkflowList, String connectionCredentials,String websiteToAnnotate) throws SecurityException, NoSuchMethodException, IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException
 	{
 		Class connectionClass = (Class)m_RegisteredServicesConnections.get(serviceConnection);
-		Constructor connectionClassConstructor = connectionClass.getDeclaredConstructor(new Class[] { List.class,Vector.class,String.class});
-		return (Connection)connectionClassConstructor.newInstance(new Object[] {resultsList,exampleWorkflowList,connectionCredentials });
+		Constructor connectionClassConstructor = connectionClass.getDeclaredConstructor(new Class[] { List.class,Vector.class,String.class,String.class});
+		return (Connection)connectionClassConstructor.newInstance(new Object[] {resultsList,exampleWorkflowList,connectionCredentials,websiteToAnnotate });
 	}
 
 }

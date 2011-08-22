@@ -61,6 +61,7 @@ public class Provenance {
 	protected static GraphOperationFactory graphOperationFactory= new GraphOperationFactory() ;
 	protected static ConnectionFactory connectionFactory=new ConnectionFactory();
 	protected static String connectionCredentials="";
+	protected static String websiteToAnnotate="http://sandbox.biocatalogue.org";
 	
 	public static void main(String[] args) throws SecurityException, IllegalArgumentException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException {
 		
@@ -69,8 +70,9 @@ public class Provenance {
 		String response;
 		String tavernaDir="";	
 		supportedTripleStores.addElement("4Store");
-		//fix getOpt Start
-		LongOpt[] longopts = new LongOpt[13];
+		
+		//Setting up accepted flags
+		LongOpt[] longopts = new LongOpt[14];
 		longopts[0] = new LongOpt("help", LongOpt.NO_ARGUMENT, null, 'h');
 		longopts[1] = new LongOpt("all", LongOpt.OPTIONAL_ARGUMENT, null, 'a');
 		longopts[2] = new LongOpt("this", LongOpt.REQUIRED_ARGUMENT, null, 't');
@@ -84,8 +86,9 @@ public class Provenance {
 		longopts[10] = new LongOpt("package", LongOpt.REQUIRED_ARGUMENT, null, 'g');
 		longopts[11] = new LongOpt("annotate", LongOpt.REQUIRED_ARGUMENT, null, 'o');
 		longopts[12] = new LongOpt("credentials", LongOpt.REQUIRED_ARGUMENT, null, 'e');
+		longopts[13] = new LongOpt("website", LongOpt.REQUIRED_ARGUMENT, null, 'w');
 		
-		Getopt g = new Getopt("Provenance Processor", args, "a::t:s:p:c:d:l:k:b:g:o:e:h",longopts);   
+		Getopt g = new Getopt("Provenance Processor", args, "a::t:s:p:c:d:l:k:b:g:o:e:w:h",longopts);   
 		 //
 		 int c;
 		 String t2FlowLocation="";
@@ -173,13 +176,14 @@ public class Provenance {
 		        	  System.out.println("--| Long: --same |  Short: -s <Workflow .t2flow filepath -REQUIRED-> <Workflow variables in the form PORTNAME PORTVALUE> The specified workflow is run and inserted in the triple store. All provenance information, including past provenance, regarding the specified workflow is returned");
 		        	  System.out.println("--| Long: --provenance  | Short: -p <Workflow .t2flow filepath -REQUIRED-> <Workflow variables in the form PORTNAME PORTVALUE> The specified workflow is run and parsed. All provenance information, including past provenance, regarding the specified workflow is returned. No new data is inserted in the triple store");
 		        	  System.out.println("--| Long: --csvlocation | Short: -c <System directory for .csv file creation -REQUIRED-> A .csv file is created at the specified directory containing the query results of -a, -t, -s or -p flags ");
-		        	  System.out.println("--| Long: --tavernadirectory | Short: -d <Taverna directory -REQUIRED-> System directory of the Taverna program. Necessary");
+		        	  System.out.println("--| Long: --tavernadirectory | Short: -d <Taverna directory -REQUIRED->  System directory of the Taverna command-line tool.");
 		        	  System.out.println("--| Long: --softlimit        | Short: -l <INTEGER -REQUIRED-> Sets Soft Limit for the queries. Default is 200 ");
 		        	  System.out.println("--| Long: --triplestorename  | Short: -k <STRING name of desired triple store -REQUIRED-> Sets the triple store to be used by the application. Default is 4Store. Give the store name, exactly as it appears in your classes eg. AddGraphTo4Store -> -k 4Store ");
 		        	  System.out.println("--| Long: --package          | Short: -g <STRING package name where the AddGraphToX and other classes reside -REQUIRED-> Defines the package for custom classes that will be registered to factory methods. Argument must be in the form: uk.ac.manchester.cs.spanoude.semanticprovenance. After the last .,there should be the Class names. Do NOT include class names in your argument");
 		        	  System.out.println("--| Long: --triplestorelocation | Short: -b <STRING location of triple store . eg: http://localhost:8001  -REQUIRED-> Sets the triple store location to be used by the application. Default is http://localhost:8001 . ");
 		        	  System.out.println("--| Long: --annotate | Short: -o <STRING Service to annotate or use. Default=BioCatalogue  -REQUIRED-> Sets the service that the application will annotate or use after it has collected the required data. Don't forget to use the --credentials flag if the service you connect to requires authentication");
-		        	  System.out.println("--| Long: --credentials | Short: -e <STRING credentials to be used in connection authentication. Please  use the syntax: eg: username:password  -REQUIRED-> Sets the credentials(username and password) to be used in connection authentication");
+		        	  System.out.println("--| Long: --credentials | Short: -e <STRING credentials to be used in connection authentication. Please  use the syntax: username:password  -REQUIRED-> Sets the credentials(username and password) to be used in connection authentication");
+		        	  System.out.println("--| Long: --website | Short: -w <STRING Website to use when annotating.Default is BioCatalogue sandbox website. -REQUIRED- Accepted arguments are 'BioCataLogue', which specifies the actual BioCatalogue website and 'other:<website to use>' for any other website ");
 		        	  System.out.println("--| Long: --help                | Short: -h returns help information ");
 		        	  System.out.println("---------------------------------------------------------------------------------------------------------------------- \n");
                       return;
@@ -202,10 +206,14 @@ public class Provenance {
 		        	        Integer.parseInt(g.getOptarg());
 		        	        if(Integer.parseInt(g.getOptarg())>0)
 		        	        querySoftLimit=Integer.parseInt(g.getOptarg());
+		        	        else{
+		        	        	System.out.println("\""+g.getOptarg()+"\""+" is not a valid positive integer. Soft limit will be set at "+querySoftLimit);
+		        	        }
 		        	        //user inserted an integer
 		        	    }
 		        	    catch(NumberFormatException e){
-		        	       //user inserted something else
+		        	       System.out.println(e);//user inserted something else
+		        	       System.out.println("\""+g.getOptarg()+"\""+" is not a valid positive integer. Soft limit will be set at "+querySoftLimit);
 		        	    }
                      break;
 		        	   
@@ -242,6 +250,21 @@ public class Provenance {
 		        	  credentials=g.getOptarg();
 		        	  break;
 		          }
+		          case 'w':{
+		        	  if(g.getOptarg().equals("BioCatalogue")){
+		        		  websiteToAnnotate="http://biocatalogue.org/";
+		        	  }
+		        	  else if(g.getOptarg().contains("other")){
+		        		  websiteToAnnotate=g.getOptarg().substring(g.getOptarg().indexOf(":")+1);
+		        		  System.out.println(websiteToAnnotate);
+		        	  }
+		        	  else{
+		        		  System.out.println("Invalid argument for --website flag. Accepted arguments are 'sandbox','BioCataLogue' and 'other:<website to use>'");
+		        		  System.out.println("Using default settings: BioCatalogue sandbox website will be used for annotation purposes");
+		        	  }
+		        	  break;
+		          }
+		        	  
 		            //
 		          case '?':
 		            break; // getopt() already printed an error
@@ -250,7 +273,11 @@ public class Provenance {
 		            System.out.print("getopt() returned " + c + "\n");
 		       }
 		   }
-		 //fix getOpt End
+		 
+		 if (!taskIssued){
+			 System.out.println("You have not specified a running mode for the program. Use one of the flags --all,--this,--same or --provenance followed by a .t2flow file location ");
+			 return;
+		 }
 		 
 		//-----Step 0. Register classes in the respective factories
 		 try {
@@ -276,14 +303,18 @@ public class Provenance {
 			j++;
 		 }
 		 
-		 //-----Step 2 Check flags and proceed with program execution ----------
-		  if (tavernaDirSet){
+		 //-----Step 1.2 Check flags and proceed with program execution ----------
+		  
 			   if (!noInput){
-			  //Step 2.1 Run workflow
+				   if (!tavernaDirSet){
+				   System.out.println("You have not specified a Taverna program folder. Do so by using -d <Taverna directory> and rerun the program");
+				   return;
+				   }
+			  //Step 2 Run workflow
 			System.out.println (t2FlowLocation);
 			   runWorkflow(tavernaDir,portArgs, t2FlowLocation);
 			   
-			  //Step 2.2 Load provenance file in triple store
+			  //Step 3 Load provenance file in triple store
 				try {
 					System.out.println("Starting Loading procedure...");
 					//if(tripleStore.equals("4store"))
@@ -293,7 +324,7 @@ public class Provenance {
 				if(insertProvenanceDataInStore){
 					loadProvenanceFileInStore(provenanceGraph,true,graphOperationFactory);			
 				
-			 //Step 2.3 Create Scufl2 file out of workflow file
+			 //Step 4 Create Scufl2 file out of workflow file
 					System.out.println("Creating Scufl2 file...");
 					try {
 					  scufl2File=createScufl2File(t2FlowLocation);
@@ -304,17 +335,17 @@ public class Provenance {
 					} catch (WriterException e) {
 						e.printStackTrace();
 					}			                  
-		    //Step 2.4. Unzip Scufl2 file and create profile and dataflow rdf files   
+		    //Step 5 Unzip Scufl2 file and create profile and dataflow rdf files   
 					String unzipDirectory=unzipScufl2File(t2FlowLocation);             // check check
 					
-		   //Step 2.5 Load profile, dataflow and bundle files in the triple store	
+		   //Step 6 Load profile, dataflow and bundle files in the triple store	
 					loadProfileAndDataflowFiles(unzipDirectory,graphOperationFactory);
 				}
 				else{
 					loadProvenanceFileInStore(provenanceGraph,false,graphOperationFactory);	
 				        }
 				
-		 //Step 2.6 Run wsdl finding query on specified graphs and create .csv files with the results if so specified.	
+		 //Steps 7 & 8 Run wsdl finding query on specified graphs and create .csv files with the results if so specified.	
 				switch(resultOption){
 				
 				case 1:{
@@ -343,8 +374,8 @@ public class Provenance {
 				}
 		
 				if(annotate){
-			//Step 2.7 : Annotate Service (Default=Biocatalogue) with: 1)Example data for inputs and outputs	, 2) Example workflows that use the wsdl services identified, found through MyExperiment SPARQL endpoint
-				//--Add an abstraction layer here in case someone wants to annotate something else?!
+			//Step 9 : Annotate Service (Default=Biocatalogue) with: 1)Example data for inputs and outputs	, 2) Example workflows that use the wsdl services identified, found through MyExperiment SPARQL endpoint
+				
 				System.out.println("Annotating "+service+"...");
 				annotateService(storeResponse);
 				}
@@ -358,18 +389,14 @@ public class Provenance {
 				
 			   }
 			   else{
-				 findWSDLServicesForEveryProvenanceGraph(graphOperationFactory);
+				   storeResponse=findWSDLServicesForEveryProvenanceGraph(graphOperationFactory);
+				 if(annotate){
+					 System.out.println("Annotating "+service+"...");
+					 annotateService(storeResponse);
+				 }
 				   }
 		  			   
-	    	  }
-		 else 
-		    System.out.println("You have not specified a Taverna program folder. Do so by using -d <Taverna directory> and rerun the program");
-		 
-		 
-			 
-			 
-	
-			
+	    				
 		}
 	
 	
@@ -433,7 +460,8 @@ private static void loadProvenanceFileInStore(String graph, Boolean insert,Graph
 	System.out.println("UID:"+UID);
 	pureUID=UID.substring(UID.indexOf("workflow/")+9,UID.lastIndexOf("/"));
 	System.out.println("pure:"+pureUID);
-	String findWorkflowRunQuery= prefixes+"SELECT ?runURI WHERE { GRAPH <https://github.com/cyfer/Taverna_Provenance/wiki/tempprovenance> { ?runURI rdf:type j:workflow_run }} LIMIT 100";
+	String findWorkflowRunQuery= prefixes+"SELECT ?runURI WHERE { GRAPH <https://github.com/cyfer/Taverna_Provenance/wiki/tempprovenance> { ?runURI rdf:type j:workflow_run }} LIMIT 100"; //j:workflow_run
+	//String findWorkflowRunQuery= prefixes+"SELECT ?runURI WHERE { GRAPH <https://github.com/cyfer/Taverna_Provenance/wiki/tempprovenance> { ?wfRun j:has_execution ?runURI }} LIMIT 100"; //j:workflow_run
 	newQuery= graphOperationFactory.createQuery(tripleStore+"Query",findWorkflowRunQuery,storeLocation,"Getting workflow run id...",querySoftLimit);    //get unique workflow id
 	response=newQuery.getStoreResponse();
 	
@@ -443,15 +471,8 @@ private static void loadProvenanceFileInStore(String graph, Boolean insert,Graph
 	if(!insert){  //if insert is not true we are only looking for the workflow UID and can now return
 	 return;}
 	
-	//--Check if the provenance file has already been inserted in the triple store 
-	String workflowrunIdURI=response.substring(response.indexOf("<"), response.lastIndexOf(">")+1);
-	String checkWorkflowRunUniquenessQuery=prefixes+"ASK {"+workflowrunIdURI+" rdf:type j:workflow_run}";
-	newQuery= graphOperationFactory.createQuery(tripleStore+"Query",checkWorkflowRunUniquenessQuery,storeLocation,"Checking workflow run id uniqueness...",querySoftLimit);
-	response=newQuery.getStoreResponse();
-	System.out.println(response);		
-	
-	//--If workflow run is not found amongst provenance files, insert the graph and references. Otherwise return.
-	if(response.contains("false")){    
+		
+	//-- insert the graph and references.
     UUID provenanceUID = UUID.randomUUID();
     newGraph=graphOperationFactory.createAddGraph(tripleStore+"Add",graph,"https://github.com/cyfer/Taverna_Provenance/wiki/provenance/"+String.valueOf(provenanceUID),storeLocation,"Loading finalised provenance graph...",1);//new AddGraphTo4Store(graph,"https://github.com/cyfer/Taverna_Provenance/wiki/provenance/"+String.valueOf(provenanceUID),storeLocation,"Loading finalised provenance graph...",1);  //Re-insert graph, with correct URI based on workflow UID
     System.out.println("Graph: "+"https://github.com/cyfer/Taverna_Provenance/wiki/provenance/"+String.valueOf(provenanceUID)+" has been added to KB" );
@@ -466,21 +487,8 @@ private static void loadProvenanceFileInStore(String graph, Boolean insert,Graph
 		System.out.println("Creating new master provenance graph");
 		newGraph=graphOperationFactory.createAddGraph(tripleStore+"Add",provenanceTriple,"https://github.com/cyfer/Taverna_Provenance/wiki/masterprovenance",storeLocation,"Creating new master provenance graph",2);
         	}
-	}
-	else{
-		System.out.println("These provenance data already exist in the triple store!");
-		//System.out.println(workflowrunIdURI);
-		String getMatchingProvenanceGraph=prefixes+" SELECT ?provenance  WHERE { GRAPH <https://github.com/cyfer/Taverna_Provenance/wiki/masterprovenance>{"
-                                          +"?provenance myont:isProvenanceOf <"+UID+"> }"
-                                          +" GRAPH ?provenance {"+workflowrunIdURI+" rdf:type j:workflow_run }"
-                                          +"} LIMIT 200";
-
-		newQuery=graphOperationFactory.createQuery(tripleStore+"Query",getMatchingProvenanceGraph,storeLocation,"Getting existing graph URI...",querySoftLimit);
-		currentGraphURI=newQuery.getStoreResponse();
-		currentGraphURI=currentGraphURI.substring(currentGraphURI.indexOf("<")+1, currentGraphURI.lastIndexOf(">")+1);
-		System.out.println(currentGraphURI);
-	}	
-
+	
+	
 }
 
 
@@ -669,13 +677,13 @@ protected static String  findWSDLServicesForEveryProvenanceGraph(GraphOperationF
 protected static String  findWSDLServicesForCurrentProvenanceGraph(GraphOperationFactory graphOperationFactory) throws IllegalArgumentException, SecurityException, InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException{
 	//Run the wsdl finding query
 	 
-	String wsdlQuery=prefixes+" SELECT ?processor ?portname ?valuebinding ?activityname ?wsdlURL WHERE {" 
+	String wsdlQuery=prefixes+" SELECT ?processor ?portname  ?valuebinding ?activityname ?wsdlURL WHERE {"  //
 	
 	+"	GRAPH <https://github.com/cyfer/Taverna_Provenance/wiki/masterprofile> {"
 	+"	?profile myont:isProfileOf <"+UID+">}"
 
 
-	+"	GRAPH <"+ currentGraphURI+"> {?procURI j:has_processor_type ?type . FILTER regex(str(?type), \"WSDLActivity\") . ?procURI rdfs:comment ?processor . ?procURI <http://knoesis.wright.edu/provenir/provenir.owl#has_parameter> ?param . ?param rdf:type j:port . ?param rdfs:comment ?portname . ?param j:has_value_binding ?valueURI . ?valueURI rdfs:comment ?valuebinding"
+	+"	GRAPH <"+ currentGraphURI+"> {?procURI j:has_processor_type ?type . FILTER regex(str(?type), \"WSDLActivity\") . ?procURI rdfs:comment ?processor . ?procURI <http://knoesis.wright.edu/provenir/provenir.owl#has_parameter> ?param . ?param rdf:type j:port . ?param rdfs:comment ?portname . ?param j:has_value_binding ?valueURI . ?valueURI rdfs:comment ?valuebinding"//
 	+"	} "
 
 	+"	GRAPH ?profile { ?procbindingURI  scufl2:bindActivity ?activityURI . ?procbindingURI scufl2:name ?name . FILTER (str(?processor)=?name). ?configURI scufl2:configure ?activityURI . ?configURI <http://ns.taverna.org.uk/2010/activity/wsdl#operation> ?bnode . ?bnode taverna:name ?activityname . ?bnode taverna:wsdl ?wsdlURL}"
@@ -843,7 +851,7 @@ protected static void annotateService(String storeResponse) throws SecurityExcep
 	       +"?s dcterms:identifier ?o .  FILTER (regex(str(?o), '"+pureUID+"'))"    //example : bb9ce24e-4a54-4111-a4fe-a55d0e80ff95
 	       +"} LIMIT 200";
 		MyExperimentConnection testMyExp=new MyExperimentConnection(myExperimentQuery);
-		connectionFactory.createConnection(service+"Connection",parseQueryResults(storeResponse),testMyExp.getExampleWorkflows(),credentials);
+		connectionFactory.createConnection(service+"Connection",parseQueryResults(storeResponse),testMyExp.getExampleWorkflows(),credentials,websiteToAnnotate);
 		//BioCatalogueConnection connection=new BioCatalogueConnection(parseQueryResults(storeResponse),testMyExp.getExampleWorkflows());
 	} catch (IOException e) {
 		

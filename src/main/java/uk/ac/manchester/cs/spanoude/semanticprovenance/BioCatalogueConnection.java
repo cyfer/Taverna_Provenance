@@ -13,22 +13,30 @@ import org.biocatalogue.x2009.xml.rest.*;
 import org.biocatalogue.x2009.xml.rest.SoapOperation.*;
 import org.biocatalogue.x2009.xml.rest.SoapService.*;
 
+import sun.misc.BASE64Encoder;
+
 
 public class BioCatalogueConnection extends Connection {
 
-	public BioCatalogueConnection(List<ResultBindings> resultsList, Vector<String> exampleWorkflowList,String connectionCredentials) throws IOException{
+	public BioCatalogueConnection(List<ResultBindings> resultsList, Vector<String> exampleWorkflowList,String connectionCredentials, String websiteToAnnotate) throws IOException{
 		
-		Connection(resultsList,exampleWorkflowList,connectionCredentials);
+		Connection(resultsList,exampleWorkflowList,connectionCredentials,websiteToAnnotate);
 	    
 		String serviceURL="";
 		String service="";
 		String port="";
 		String value="";
+		System.out.println("New connection to Biocatalogue established");
 		
 		for(ResultBindings result:resultsList){
-		String urlToConnectTo = "http://sandbox.biocatalogue.org/lookup?wsdl_location=";
+			
+		String urlToConnectTo = websiteToAnnotate+"/lookup?wsdl_location=";
 		serviceURL=result.getServiceURL();
 		serviceURL=serviceURL.substring(1, serviceURL.indexOf(">"));
+		System.out.println(urlToConnectTo+serviceURL);
+		URLEncoder enc=null;
+		serviceURL = enc.encode(serviceURL, "UTF-8"); //  encode service URL in case it contains ?
+		//System.out.println(serviceURL);
 		service=result.getService();
 		service=service.substring(1, service.lastIndexOf("\""));
 		port=result.getPort();
@@ -40,8 +48,9 @@ public class BioCatalogueConnection extends Connection {
 		//Step 1. get Soap Services and operations
 		SoapService servicesData;  
 		try {
-			System.out.println(urlToConnectTo+serviceURL);
+			
 			BioCatConnectAndGET testConnect=new BioCatConnectAndGET(urlToConnectTo+serviceURL);
+		if(testConnect.getResponseCode()==HttpURLConnection.HTTP_OK) {
 			servicesData =  SoapServiceDocument.Factory.parse(testConnect.getServerResponse()).getSoapService();
 			//System.out.println(servicesData.getName());
 			Operations operations=servicesData.getOperations();
@@ -56,13 +65,13 @@ public class BioCatalogueConnection extends Connection {
 			   urlToConnectTo = "http://sandbox.biocatalogue.org/lookup?wsdl_location="+serviceURL+"&operation_name="+entry.getName(); //
 			   //urlToConnectTo=urlToConnectTo+"&operation_name="+entry.getName();
 			   testConnect=new BioCatConnectAndGET(urlToConnectTo);
-			    SoapOperation soapOperation =SoapOperationDocument.Factory.parse(testConnect.getServerResponse()).getSoapOperation();
+			   SoapOperation soapOperation =SoapOperationDocument.Factory.parse(testConnect.getServerResponse()).getSoapOperation();
 			    Inputs opInputs= soapOperation.getInputs();
 				Outputs opOutputs=soapOperation.getOutputs();
 				SoapInput[] inputArray=opInputs.getSoapInputArray();
 				SoapOutput[] outputArray=opOutputs.getSoapOutputArray();	
 								
-		//	  System.out.println("Service name: "+entry.getName());
+			  System.out.println("Service name: "+entry.getName());
 		// Add annotations for inputs			  
 			  for(int i=0;i<inputArray.length;i++){
 		    	  if(inputArray[i].getName().equals(port)){
@@ -91,17 +100,21 @@ public class BioCatalogueConnection extends Connection {
 			System.out.println(exampleWorkflowList.elementAt(0));
 			if(exampleWorkflowList.elementAt(i).contains("\"")){
 			 exampleWorkflowList.set(i, parseString(exampleWorkflowList.elementAt(i),"\""));
-			}
+			                                                    }
 		 	postAnnotations(actualURL,"example_workflow",exampleWorkflowList.elementAt(i),connectionCredentials);
-		}
-		}
+		                                                  }
+		                                 }
 		else{
 			System.out.println("No example workflow URL was found in MyExperiment");
-		}
+	     	}
 			
 			break;
 			   }
 		}
+	}
+		else{
+			System.out.println("Server returned:"+testConnect.getResponseCode());
+		    }
 		    
 		} catch (XmlException e) {
 			
